@@ -1,0 +1,108 @@
+import "./style.css";
+
+import * as THREE from "three";
+
+//前進か後進か変数宣言
+
+//移動速度と移動方向の定義
+
+const color = new THREE.Color();
+
+/**
+ *  シーン
+ **/
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xffffff);
+scene.fog = new THREE.Fog(0xffffff, 0, 750);
+
+/**
+ *  カメラ
+ **/
+const camera = new THREE.PerspectiveCamera(
+  75,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
+);
+camera.position.set(0, 1, 2);
+
+/**
+ *  レンダラー
+ **/
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+/**
+ *  ライト
+ **/
+const light = new THREE.HemisphereLight(0xeeeeff, 0x777788, 0.75);
+light.position.set(0.5, 1, 0.75);
+scene.add(light);
+
+//FPS視点設定
+
+/**
+ * オブジェクト生成
+ **/
+const planeGeometry = new THREE.PlaneGeometry(400, 400, 100, 100);
+const material = new THREE.MeshBasicMaterial({
+  color: "orange",
+  wireframe: true,
+});
+const plane = new THREE.Mesh(planeGeometry, material);
+plane.rotateX(-Math.PI / 2);
+scene.add(plane);
+
+const boxGeometry = new THREE.BoxGeometry(20, 20, 20);
+let position = boxGeometry.attributes.position;
+const colorsBox = [];
+for (let i = 0, l = position.count; i < l; i++) {
+  color.setHSL(Math.random() * 0.3 + 0.5, 0.75, Math.random() * 0.25 + 0.75);
+  colorsBox.push(color.r, color.g, color.b);
+}
+boxGeometry.setAttribute(
+  "color",
+  new THREE.Float32BufferAttribute(colorsBox, 3)
+);
+for (let i = 0; i < 200; i++) {
+  const boxMaterial = new THREE.MeshPhongMaterial({
+    specular: 0xffffff,
+    flatShading: true,
+    vertexColors: true,
+  });
+  boxMaterial.color.setHSL(
+    Math.random() * 0.2 + 0.5,
+    0.75,
+    Math.random() * 0.25 + 0.75
+  );
+  const box = new THREE.Mesh(boxGeometry, boxMaterial);
+  box.position.x = Math.floor(Math.random() * 20 - 10) * 20;
+  box.position.y = Math.floor(Math.random() * 20) * 20 + 10;
+  box.position.z = Math.floor(Math.random() * 20 - 10) * 20;
+  scene.add(box);
+}
+
+//キーボード操作
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  // 前進後進判定
+
+  //ポインターがONになったら
+
+  renderer.render(scene, camera);
+}
+
+animate();
+
+/**
+ * 画面リサイズ設定
+ **/
+window.addEventListener("resize", onWindowResize);
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
